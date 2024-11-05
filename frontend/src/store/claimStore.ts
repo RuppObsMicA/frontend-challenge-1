@@ -7,8 +7,12 @@ class ClaimsStore {
         makeAutoObservable(this);
     }
 
-    setClaimsData(data) {
+    setClaimsData(data: any[]) {
         this.claimsData = data;
+    }
+
+    getClaimsData() {
+        return this.claimsData;
     }
 
 }

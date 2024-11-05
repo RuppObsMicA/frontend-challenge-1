@@ -1,9 +1,9 @@
-import UploadClaim from "~/components/uploadClaim.tsx";
+import UploadClaim from "~/components/UploadClaim.tsx";
 
 export default function MainPage() {
   return (
-    <div className="flex h-full items-center justify-center text-sm text-gray-400 text-center">
-      <UploadClaim />
+    <div className="flex h-full w-full justify-center text-sm text-gray-400 text-center">
+        <UploadClaim />
     </div>
   );
 }
