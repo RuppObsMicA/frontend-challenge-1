@@ -1,9 +1,10 @@
 import {useEffect, useState} from "react";
 import {claimSchema} from "~/utils/claimSchema.ts";
 import Papa from 'papaparse';
-import {ENDPOINT_TO_FETCH_FILES, URL} from "~/utils/constants.ts";
+import {ENDPOINT_TO_FETCH_FILES, mockMrfFiles, URL} from "~/utils/constants.ts";
 import {adapterClaimsData} from "~/utils/adapterClaimsData.ts";
 import {fetchAPI} from "~/services/api.ts";
+import {Claim} from "~/store/claimStore.ts";
 
 export const useUploadClaim = () => {
     const [fileName, setFileName] = useState('');
@@ -37,7 +38,7 @@ export const useUploadClaim = () => {
 }
 
 export const useCSVParser = () => {
-    const [claimsData, setClaimsData] = useState<any[]>([]);
+    const [claimsData, setClaimsData] = useState<Claim[]>([]);
     const [error, setError] = useState<string>('');
 
     const parseCSV = (file: File) => {
@@ -55,7 +56,7 @@ export const useCSVParser = () => {
                         try {
                             claimSchema.parse(claim);
                         } catch (validationError) {
-                            setError('Validation error: ' + validationError.errors.map((e: any) => e.message).join(`, `));
+                            setError('Validation error, incorrect fields in the file: ' + validationError.errors.map((e: any) => e.message).join(`, `));
                             isValid = false;
                             break;
                         }
@@ -84,12 +85,12 @@ export const useCSVParser = () => {
     };
 };
 
-export const useUploadFile = () => {
+export const useSendClaims = () => {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [response, setResponse] = useState<any>(null);
 
-    const uploadFile = async (claimsData: any[]) => {
+    const sendClaims = async (claimsData: Claim[]) => {
         if (!claimsData || claimsData.length === 0) {
             setError('No claims data provided');
             return;
@@ -112,12 +113,12 @@ export const useUploadFile = () => {
         }
     };
 
-    return { uploading, error, response, uploadFile };
+    return { uploading, error, response, sendClaims, setError, setResponse };
 };
 
 interface MRFFile {
     fileName: string;
-    size: number;
+    status: string;
 }
 
 export const useFetchMrfFiles = () => {
@@ -135,6 +136,7 @@ export const useFetchMrfFiles = () => {
                 setMrfFiles(data.mrfFiles);
             } catch (err: any) {
                 setError(err.message || "Something went wrong while fetching MRF files.");
+                setMrfFiles(mockMrfFiles) // mock since API doesn't work
             } finally {
                 setLoading(false);
             }

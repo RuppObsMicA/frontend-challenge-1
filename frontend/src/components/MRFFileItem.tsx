@@ -1,8 +1,9 @@
 import React from 'react';
+import { Card, Text, Anchor, Badge, Button } from '@mantine/core';
 
 interface MRFFile {
     fileName: string;
-    size: number;
+    status: string;
 }
 
 interface MRFFileItemProps {
@@ -11,17 +12,36 @@ interface MRFFileItemProps {
 
 const MrfFileItem: React.FC<MRFFileItemProps> = ({ file }) => {
     return (
-        <li className="flex justify-between items-center p-2 bg-gray-100 rounded-lg">
-            <a
-                href={`/path/to/mrf-files/${file.fileName}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <div className="flex justify-between items-center">
+                <Anchor
+                    href={`/path/to/mrf-files/${file.fileName}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    color="blue"
+                    size="lg"
+                >
+                    {file.fileName}
+                </Anchor>
+                <Badge color={file.status === 'Completed' ? 'green' : 'yellow'}>
+                    {file.status}
+                </Badge>
+            </div>
+
+            <Text size="sm" color="dimmed" mt="xs">
+                {file.status === 'Completed' ? 'This file has been processed.' : 'This file is pending.'}
+            </Text>
+
+            <Button
+                variant="outline"
+                color="blue"
+                mt="md"
+                fullWidth
+                onClick={() => window.open(`/path/to/mrf-files/${file.fileName}`, '_blank')}
             >
-                {file.fileName}
-            </a>
-            <span className="text-sm text-gray-600">{file.size} bytes</span>
-        </li>
+                Download
+            </Button>
+        </Card>
     );
 };
 

@@ -1,4 +1,8 @@
-export const columnDefs = [
+import { Button } from "@mantine/core";
+import { ColDef } from "ag-grid-community";
+import { Claim } from "~/store/claimStore.ts";
+
+export const baseColumnDefs: ColDef<Claim>[] = [
     { headerName: "Claim ID", field: "Claim ID" },
     { headerName: "Subscriber ID", field: "Subscriber ID" },
     { headerName: "Member Sequence", field: "Member Sequence" },
@@ -25,4 +29,26 @@ export const columnDefs = [
     { headerName: "Member Gender", field: "Member Gender" },
     { headerName: "Provider ID", field: "Provider ID" },
     { headerName: "Provider Name", field: "Provider Name" },
+];
+
+export const columnDefsWithApprove: ColDef<Claim>[] = [
+    {
+        headerName: "Approve",
+        cellRenderer: (params) => {
+            const { handleApproveClick } = params.context;
+
+            return (
+                <Button
+                    onClick={() => handleApproveClick(params.data)}
+                    variant="outline"
+                    color={'green'}
+                >
+                   Approve
+                </Button>
+            );
+        },
+        width: 150,
+        suppressSizeToFit: true,
+    },
+    ...baseColumnDefs,
 ];
