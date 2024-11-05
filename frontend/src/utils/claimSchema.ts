@@ -8,9 +8,9 @@ export const claimSchema = z.object({
         z.number().positive("Member Sequence must be a positive number")
     ]),
     "Claim Status": z.string().min(1, "Claim Status is required"),
-    "Billed": z.number().positive("Billed amount must be positive").optional(),
-    "Allowed": z.number().positive("Allowed amount must be positive").optional(),
-    "Paid": z.number().positive("Paid amount must be positive").optional(),
+    "Billed": z.string().min(1, "Billed amount must be positive").optional(),
+    "Allowed": z.string().min(1, "Allowed amount must be positive").optional(),
+    "Paid": z.string().min(1, "Paid amount must be positive").optional(),
     "Payment Status Date": z.string().refine(value => !isNaN(Date.parse(value)), {
         message: "Payment Status Date must be a valid date",
     }).optional(),
@@ -48,10 +48,7 @@ export const claimSchema = z.object({
     "Place of Service": z.string().min(1, "Place of Service is required"),
     "Claim Type": z.string().min(1, "Claim Type is required"),
     "Procedure Code": z.string().min(1, "Procedure Code is required"),
-    "Member Gender": z.enum(["M", "F"]).optional(),
-    "Provider ID": z.union([
-        z.string().min(1, "Provider ID is required"),
-        z.number().positive("Provider ID must be a positive number")
-    ]),
+    "Member Gender": z.enum(["Male", "Female"]).optional(),
+    "Provider ID": z.string().min(1, "Provider ID must be a positive number"),
     "Provider Name": z.string().min(1, "Provider Name is required")
 });

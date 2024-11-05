@@ -1,9 +1,9 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {claimSchema} from "~/utils/claimSchema.ts";
 import Papa from 'papaparse';
-import {URL} from "~/utils/constants.ts";
+import {ENDPOINT_TO_FETCH_FILES, URL} from "~/utils/constants.ts";
 import {adapterClaimsData} from "~/utils/adapterClaimsData.ts";
-
+import {fetchAPI} from "~/services/api.ts";
 
 export const useUploadClaim = () => {
     const [fileName, setFileName] = useState('');
@@ -22,6 +22,7 @@ export const useUploadClaim = () => {
             if (!validExtensions.includes(fileExtension)) {
                 setError('Please upload a valid CSV file.');
                 setFileName('');
+                setFile(null);
                 return;
             }
 
@@ -47,19 +48,24 @@ export const useCSVParser = () => {
             complete: (results) => {
                 try {
                     const parsedData = results.data;
-                    console.log(parsedData);
-                    parsedData.forEach((claim) => {
+                    let isValid = true;
+
+                    for (let i = 0; i < parsedData.length; i++) {
+                        const claim = parsedData[i];
                         try {
                             claimSchema.parse(claim);
                         } catch (validationError) {
-                            setError('Validation error: ' + validationError.errors.map((e: any) => e.message).join(', '));
-                            return;
+                            setError('Validation error: ' + validationError.errors.map((e: any) => e.message).join(`, `));
+                            isValid = false;
+                            break;
                         }
-                    });
+                    }
 
-                    setClaimsData(parsedData);
-                    setError('');
-                    console.log(claimsData)
+                    if (isValid) {
+                        setClaimsData(parsedData);
+                        setError('');
+                        console.log(parsedData);
+                    }
 
                 } catch (e) {
                     setError('Error parsing the CSV file');
@@ -78,45 +84,64 @@ export const useCSVParser = () => {
     };
 };
 
-const useUploadFile = () => {
+export const useUploadFile = () => {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [response, setResponse] = useState<any>(null);
 
-    const uploadFile = async (claimsData) => {
+    const uploadFile = async (claimsData: any[]) => {
         if (!claimsData || claimsData.length === 0) {
             setError('No claims data provided');
             return;
         }
 
-        const transformedClaimsData = adapterClaimsData(claimsData); // Преобразуем данные с помощью адаптера
-
+        const transformedClaimsData = adapterClaimsData(claimsData);
         setUploading(true);
-        const formData = new FormData();
-
-        formData.append("claimsData", JSON.stringify(transformedClaimsData));
 
         try {
-            const res = await fetch(URL, {
-                method: "POST",
-                body: formData,
+            const data = await fetchAPI(URL, {
+                method: 'POST',
+                body: JSON.stringify(transformedClaimsData),
             });
-
-            if (!res.ok) {
-                throw new Error("Failure during uploading");
-            }
-
-            const data = await res.json();
-            setResponse(data); // Сохраняем ответ от сервера
-            setError(null); // Очищаем ошибку при успешной загрузке
+            setResponse(data);
+            setError(null);
         } catch (err: any) {
             setError(err.message || "Something went wrong..");
         } finally {
-            setUploading(false); // Заканчиваем процесс загрузки
+            setUploading(false);
         }
     };
 
     return { uploading, error, response, uploadFile };
 };
 
-export default useUploadFile;
+interface MRFFile {
+    fileName: string;
+    size: number;
+}
+
+export const useFetchMrfFiles = () => {
+    const [mrfFiles, setMrfFiles] = useState<MRFFile[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchMrfFiles = async () => {
+            setLoading(true);
+            setError(null);
+
+            try {
+                const data = await fetchAPI(`${URL}/${ENDPOINT_TO_FETCH_FILES}`);
+                setMrfFiles(data.mrfFiles);
+            } catch (err: any) {
+                setError(err.message || "Something went wrong while fetching MRF files.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMrfFiles();
+    }, []);
+
+    return { mrfFiles, loading, error };
+};

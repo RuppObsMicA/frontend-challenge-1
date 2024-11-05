@@ -1,5 +1,4 @@
 export const adapterClaimsData = (claimsData) => {
-    console.log('Received claimsData:', claimsData);
     if (!Array.isArray(claimsData)) {
         throw new Error("Expected claimsData to be an array");
     }
